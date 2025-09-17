@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Trade Academy - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            background-color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-container {
+            display: none;
+            background-color: #f5f7f9;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background-color: var(--primary);
+            color: white;
+            height: 100vh;
+            padding: 20px 0;
+            position: fixed;
+            width: 250px;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        
+        .sidebar-menu li {
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        
+        .recent-activity {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        
+        .activity-item {
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .login-error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .ai-powered-badge {
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Website Content (Hidden when dashboard is shown) -->
+    <div id="main-website">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-chart-line me-2"></i>
+                    <span class="ai-powered-badge">Apex Trade AI</span> Academy
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#courses">Courses</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#testimonials">Success Stories</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                        <li class="nav-item"><a class="btn btn-outline-light ms-2" href="#" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas"><i class="fas fa-shopping-cart me-1"></i> Cart (0)</a></li>
+                        <li class="nav-item"><a class="btn btn-warning ms-2" href="#" id="admin-login-link"><i class="fas fa-lock me-1"></i> Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Rest of your website content would be here -->
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1>Welcome to Apex Trade Academy</h1>
+                    <p class="lead">Your AI-powered path to trading success</p>
+                    <a href="#courses" class="btn btn-primary btn-lg">Explore Courses</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (Hidden by default) -->
+    <div class="dashboard-container" id="admin-dashboard">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4><i class="fas fa-chart-line me-2"></i> <span class="ai-powered-badge">Apex Trade AI</span></h4>
+                <p class="text-muted">Admin Dashboard</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</li>
+                <li><i class="fas fa-shopping-cart me-2"></i> Sales</li>
+                <li><i class="fas fa-users me-2"></i> Customers</li>
+                <li><i class="fas fa-book me-2"></i> Courses</li>
+                <li><i class="fas fa-money-bill-wave me-2"></i> Financial</li>
+                <li><i class="fas fa-robot me-2"></i> AI Team</li>
+                <li><i class="fas fa-share-alt me-2"></i> Social Media</li>
+                <li id="logout-btn"><i class="fas fa-sign-out-alt me-2"></i> Logout</li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Dashboard Overview</h2>
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <span class="badge bg-success">Live</span>
+                    </div>
+                    <div>
+                        <span id="current-date"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <i class="fas fa-shopping-cart fa-2x text-primary mb-3"></i>
+                        <h4>Total Sales</h4>
+                        <div class="stats-number" id="total-sales">R45,299</div>
+                        <p class="text-muted">+12% from last week</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                        <h4>Customers</h4>
+                        <div class="stats-number" id="total-customers">127</div>
+                        <p class="text-muted">+8 new today</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <i class="fas fa-book fa-2x text-primary mb-3"></i>
+                        <h4>Courses</h4>
+                        <div class="stats-number" id="total-courses">9</div>
+                        <p class="text-muted">+1 new this month</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                        <h4>Growth</h4>
+                        <div class="stats-number">+23%</div>
+                        <p class="text-muted">Monthly growth rate</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="chart-container">
+                        <h4>Revenue Chart</h4>
+                        <canvas id="revenueChart" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="chart-container">
+                        <h4>Customer Distribution</h4>
+                        <canvas id="customerChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4>Top Courses</h4>
+                        <canvas id="coursesChart" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4>Payment Distribution</h4>
+                        <canvas id="paymentChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity & Transactions -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="recent-activity">
+                        <h4>Recent Activity</h4>
+                        <div class="activity-item">
+                            <h6>New Course Enrollment</h6>
+                            <p class="text-muted">John Doe enrolled in "Algorithmic Trading"</p>
+                            <small>2 hours ago</small>
+                        </div>
+                        <div class="activity-item">
+                            <h6>Payment Processed</h6>
+                            <p class="text-muted">Payment of R1,499 received from Sarah Johnson</p>
+                            <small>5 hours ago</small>
+                        </div>
+                        <div class="activity-item">
+                            <h6>New User Registration</h6>
+                            <p class="text-muted">Michael Brown registered as a new user</p>
+                            <small>Yesterday</small>
+                        </div>
+                        <div class="activity-item">
+                            <h6>Course Completed</h6>
+                            <p class="text-muted">Lisa Wang completed "Trading Fundamentals"</p>
+                            <small>2 days ago</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="recent-activity">
+                        <h4>Recent Transactions</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Course</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>John Doe</td>
+                                        <td>Algorithmic Trading</td>
+                                        <td>R1,499</td>
+                                        <td>Today</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sarah Johnson</td>
+                                        <td>Derivatives & Options</td>
+                                        <td>R1,399</td>
+                                        <td>Today</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Robert Brown</td>
+                                        <td>Market Psychology</td>
+                                        <td>R799</td>
+                                        <td>Yesterday</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Emily Davis</td>
+                                        <td>Advanced Technical Analysis</td>
+                                        <td>R899</td>
+                                        <td>Yesterday</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Michael Wilson</td>
+                                        <td>Trading Strategies</td>
+                                        <td>R999</td>
+                                        <td>2 days ago</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Admin Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="adminLoginForm">
+                        <div class="mb-3">
+                            <label for="admin-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="admin-username" required>
+                            <div class="login-error" id="username-error">Please enter a valid username</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="admin-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="admin-password" required>
+                            <div class="login-error" id="password-error">Please enter a valid password</div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="remember-me">
+                            <label class="form-check-label" for="remember-me">Remember me</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Main application object
+        const apexTradeApp = {
+            init: function() {
+                this.setupEventListeners();
+                this.setCurrentDate();
+            },
+            setupEventListeners: function() {
+                // Admin login
+                document.getElementById('admin-login-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showAdminLogin();
+                });
+
+                // Admin login form
+                document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleAdminLogin();
+                });
+
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+            },
+            showAdminLogin: function() {
+                const adminLoginModal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+                adminLoginModal.show();
+            },
+            handleAdminLogin: function() {
+                const username = document.getElementById('admin-username').value;
+                const password = document.getElementById('admin-password').value;
+                const usernameError = document.getElementById('username-error');
+                const passwordError = document.getElementById('password-error');
+                
+                // Reset error messages
+                usernameError.style.display = 'none';
+                passwordError.style.display = 'none';
+                
+                // Simple validation - in a real app, this would call an API
+                if (username !== 'admin') {
+                    usernameError.style.display = 'block';
+                    return;
+                }
+                
+                if (password !== 'admin123') {
+                    passwordError.style.display = 'block';
+                    return;
+                }
+                
+                // Hide main website and show dashboard
+                document.getElementById('main-website').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                
+                // Close login modal
+                const adminLoginModal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
+                adminLoginModal.hide();
+                
+                // Initialize charts
+                this.initCharts();
+                
+                this.showNotification('Admin login successful', 'success');
+            },
+            handleLogout: function() {
+                // Show main website and hide dashboard
+                document.getElementById('main-website').style.display = 'block';
+                document.getElementById('admin-dashboard').style.display = 'none';
+                
+                this.showNotification('Logged out successfully', 'info');
+            },
+            setCurrentDate: function() {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+            },
+            initCharts: function() {
+                // Revenue Chart
+                const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+                        datasets: [{
+                            label: 'Monthly Revenue (R)',
+                            data: [12500, 13500, 14200, 14800, 15500, 16300, 17200, 18500, 21000, 23800, 25299],
+                            borderColor: '#3498db',
+                            tension: 0.3,
+                            fill: true,
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        }
+                    }
+                });
+                
+                // Customer Distribution Chart
+                const customerCtx = document.getElementById('customerChart').getContext('2d');
+                new Chart(customerCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['South Africa', 'Namibia', 'Botswana', 'Zimbabwe', 'Other'],
+                        datasets: [{
+                            data: [65, 15, 10, 5, 5],
+                            backgroundColor: [
+                                '#3498db',
+                                '#e74c3c',
+                                '#2ecc71',
+                                '#f39c12',
+                                '#9b59b6'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+                
+                // Top Courses Chart
+                const coursesCtx = document.getElementById('coursesChart').getContext('2d');
+                new Chart(coursesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Algorithmic Trading', 'Derivatives & Options', 'Trading Strategies', 'Market Psychology', 'Advanced TA'],
+                        datasets: [{
+                            label: 'Number of Students',
+                            data: [42, 38, 35, 32, 28],
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                
+                // Payment Distribution Chart
+                const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+                new Chart(paymentCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Owner (60%)', 'AI Fund (20%)', 'Reserve Fund (20%)'],
+                        datasets: [{
+                            data: [60, 20, 20],
+                            backgroundColor: [
+                                '#3498db',
+                                '#2ecc71',
+                                '#f39c12'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            },
+            showNotification: function(message, type) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed`;
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                notification.style.zIndex = '1050';
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            apexTradeApp.init();
+        });
+    </script>
+</body>
+</html>
